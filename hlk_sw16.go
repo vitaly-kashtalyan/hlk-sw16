@@ -4,6 +4,25 @@ import (
 	"bufio"
 	"log"
 	"net"
+	"strings"
+)
+
+const (
+	Prefix        = "\xaa"
+	Suffix        = "\xbb"
+	StatusReading = "\x1e"
+	SwitchOnAll   = "\x01"
+	SwitchOffAll  = "\x02"
+	Action        = "\x0f"
+	ActionOnAll   = "\x0a"
+	ActionOffAll  = "\x0b"
+	RelayOn       = "\x01"
+	RelayOff      = "\x02"
+	Default       = "\x01"
+)
+
+var (
+	Relays = []string{"\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0a", "\x0b", "\x0c", "\x0d", "\x0e", "\x0f"}
 )
 
 type Connection struct {
@@ -28,6 +47,30 @@ func (c *Connection) close() (err error) {
 		err = c.conn.Close()
 	}
 	return
+}
+
+func (c *Connection) switchAllOff() (err error) {
+	return c.relaySwitch(ActionOffAll, SwitchOffAll, RelayOff)
+}
+
+func (c *Connection) switchAllOn() (err error) {
+	return c.relaySwitch(ActionOnAll, SwitchOnAll, RelayOn)
+}
+
+func (c *Connection) relayOn(id int) (err error) {
+	return c.relaySwitch(Action, Relays[id], RelayOn)
+}
+
+func (c *Connection) relayOff(id int) (err error) {
+	return c.relaySwitch(Action, Relays[id], RelayOff)
+}
+
+func (c *Connection) relaySwitch(action string, relay string, state string) (err error) {
+	return c.writeMessage(Prefix + action + relay + state + strings.Repeat(Default, 15) + Suffix)
+}
+
+func (c *Connection) readStatusRelays() (err error) {
+	return c.writeMessage(Prefix + StatusReading + strings.Repeat(Default, 17) + Suffix)
 }
 
 func (c *Connection) writeMessage(msg string) (err error) {
