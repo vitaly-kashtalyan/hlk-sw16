@@ -59,7 +59,7 @@ func (c *Connection) SwitchAllOn() (err error) {
 }
 
 func (c *Connection) RelayOn(id int) (err error) {
-	if id < 0 && id > 15 {
+	if id < 0 || id > 15 {
 		err = errors.New("argument id has an invalid value: please use only 0-15")
 	} else {
 		err = c.relaySwitch(action, relays[id], relayOn)
@@ -68,7 +68,7 @@ func (c *Connection) RelayOn(id int) (err error) {
 }
 
 func (c *Connection) RelayOff(id int) (err error) {
-	if id < 0 && id > 15 {
+	if id < 0 || id > 15 {
 		err = errors.New("argument id has an invalid value: please use only 0-15")
 	} else {
 		err = c.relaySwitch(action, relays[id], relayOff)
