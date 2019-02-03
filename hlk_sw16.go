@@ -8,80 +8,80 @@ import (
 )
 
 const (
-	Prefix        = "\xaa"
-	Suffix        = "\xbb"
-	StatusReading = "\x1e"
-	SwitchOnAll   = "\x01"
-	SwitchOffAll  = "\x02"
-	Action        = "\x0f"
-	ActionOnAll   = "\x0a"
-	ActionOffAll  = "\x0b"
-	RelayOn       = "\x01"
-	RelayOff      = "\x02"
-	Default       = "\x01"
+	prefix        = "\xaa"
+	suffix        = "\xbb"
+	statusReading = "\x1e"
+	switchOnAll   = "\x01"
+	switchOffAll  = "\x02"
+	action        = "\x0f"
+	actionOnAll   = "\x0a"
+	actionOffAll  = "\x0b"
+	relayOn       = "\x01"
+	relayOff      = "\x02"
+	defaultByte   = "\x01"
 )
 
 var (
-	Relays = []string{"\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0a", "\x0b", "\x0c", "\x0d", "\x0e", "\x0f"}
+	relays = []string{"\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0a", "\x0b", "\x0c", "\x0d", "\x0e", "\x0f"}
 )
 
 type Connection struct {
-	conn net.Conn
-	err  error
+	Conn net.Conn
+	Err  error
 }
 
-func new(host string, port string) (c *Connection) {
+func New(host string, port string) (c *Connection) {
 	conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
 	if err != nil {
 		log.Println("Error establishing connection:", err.Error())
 	}
 
 	return &Connection{
-		conn: conn,
-		err:  err,
+		Conn: conn,
+		Err:  err,
 	}
 }
 
-func (c *Connection) close() (err error) {
-	if c.conn != nil {
-		err = c.conn.Close()
+func (c *Connection) Close() (err error) {
+	if c.Conn != nil {
+		err = c.Conn.Close()
 	}
 	return
 }
 
-func (c *Connection) switchAllOff() (err error) {
-	return c.relaySwitch(ActionOffAll, SwitchOffAll, RelayOff)
+func (c *Connection) SwitchAllOff() (err error) {
+	return c.relaySwitch(actionOffAll, switchOffAll, relayOff)
 }
 
-func (c *Connection) switchAllOn() (err error) {
-	return c.relaySwitch(ActionOnAll, SwitchOnAll, RelayOn)
+func (c *Connection) SwitchAllOn() (err error) {
+	return c.relaySwitch(actionOnAll, switchOnAll, relayOn)
 }
 
-func (c *Connection) relayOn(id int) (err error) {
-	return c.relaySwitch(Action, Relays[id], RelayOn)
+func (c *Connection) RelayOn(id int) (err error) {
+	return c.relaySwitch(action, relays[id], relayOn)
 }
 
-func (c *Connection) relayOff(id int) (err error) {
-	return c.relaySwitch(Action, Relays[id], RelayOff)
+func (c *Connection) RelayOff(id int) (err error) {
+	return c.relaySwitch(action, relays[id], relayOff)
 }
 
 func (c *Connection) relaySwitch(action string, relay string, state string) (err error) {
-	return c.writeMessage(Prefix + action + relay + state + strings.Repeat(Default, 15) + Suffix)
+	return c.WriteMessage(prefix + action + relay + state + strings.Repeat(defaultByte, 15) + suffix)
 }
 
-func (c *Connection) readStatusRelays() (err error) {
-	return c.writeMessage(Prefix + StatusReading + strings.Repeat(Default, 17) + Suffix)
+func (c *Connection) StatusRelays() (err error) {
+	return c.WriteMessage(prefix + statusReading + strings.Repeat(defaultByte, 17) + suffix)
 }
 
-func (c *Connection) writeMessage(msg string) (err error) {
-	if _, err := c.conn.Write([]byte(msg)); err != nil {
+func (c *Connection) WriteMessage(msg string) (err error) {
+	if _, err := c.Conn.Write([]byte(msg)); err != nil {
 		log.Println("Write to server failed:", err.Error())
 	}
 	return
 }
 
-func (c *Connection) readMessage() (msg []byte, err error) {
-	reader := bufio.NewReader(c.conn)
+func (c *Connection) ReadMessage() (msg []byte, err error) {
+	reader := bufio.NewReader(c.Conn)
 	b, err := reader.ReadByte()
 	if err != nil {
 		log.Println("Error reading:", err.Error())
