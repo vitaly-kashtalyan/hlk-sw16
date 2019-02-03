@@ -97,7 +97,6 @@ func (c *Connection) readMessage() (msg []byte, err error) {
 				msg = append(msg, b)
 			} else {
 				log.Println("Unreadable character:", b)
-				return
 			}
 		}
 	}
