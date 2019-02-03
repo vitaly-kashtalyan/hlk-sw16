@@ -2,6 +2,7 @@ package hlk_sw16
 
 import (
 	"bufio"
+	"errors"
 	"log"
 	"net"
 	"strings"
@@ -58,11 +59,21 @@ func (c *Connection) SwitchAllOn() (err error) {
 }
 
 func (c *Connection) RelayOn(id int) (err error) {
-	return c.relaySwitch(action, relays[id], relayOn)
+	if id < 0 && id > 15 {
+		err = errors.New("argument id has an invalid value: please use only 0-15")
+	} else {
+		err = c.relaySwitch(action, relays[id], relayOn)
+	}
+	return
 }
 
 func (c *Connection) RelayOff(id int) (err error) {
-	return c.relaySwitch(action, relays[id], relayOff)
+	if id < 0 && id > 15 {
+		err = errors.New("argument id has an invalid value: please use only 0-15")
+	} else {
+		err = c.relaySwitch(action, relays[id], relayOff)
+	}
+	return
 }
 
 func (c *Connection) relaySwitch(action string, relay string, state string) (err error) {
